@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_ttf.h>
 #include "./constants.h"
+#include <math.h>
 
 int initialize_window(void);
 void setup(void);
@@ -33,8 +34,8 @@ int map[BOARD_SIZE][BOARD_SIZE] = {
 };
 
 struct rectangle {
-    float x;
-    float y;
+    float x, y, dx, dy, a;
+
     float width;
     float height;
 } player;
@@ -127,15 +128,37 @@ void process_input() {
     }
 
     // Update player positions based on key states
-    if (keys[SDL_SCANCODE_S])
-        player.y += PLAYER_SPEED * delta_time;
-    if (keys[SDL_SCANCODE_W])
-        player.y -= PLAYER_SPEED * delta_time;
     if (keys[SDL_SCANCODE_A])
-        player.x -= PLAYER_SPEED * delta_time;
+    {
+        player.a -= 0.1;
+        if (player.a < 0) {
+            player.a += 2*PI;
+        }
+        player.dx = cos(player.a) * 5;
+        player.dy = sin(player.a) * 5;
+    }
+
     if (keys[SDL_SCANCODE_D])
-        player.x += PLAYER_SPEED * delta_time;
-}
+    {
+        player.a += 0.1;
+        if (player.a > 2*PI){
+            player.a -= 2*PI;
+        }
+        player.dx = cos(player.a) * 5;
+        player.dy = sin(player.a) * 5;
+    }
+    if (keys[SDL_SCANCODE_S])
+    {    
+        player.y -= PLAYER_SPEED * delta_time * player.dy;
+        player.x -= PLAYER_SPEED * delta_time * player.dx;
+    }
+
+    if (keys[SDL_SCANCODE_W])
+    {
+        player.y += PLAYER_SPEED * delta_time * player.dy;
+        player.x += PLAYER_SPEED * delta_time * player.dx;
+    }
+    }
 
 
 
@@ -194,6 +217,14 @@ void render() {
 
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderFillRect(renderer, &p);
+
+
+    int x = player.x  + (player.width / 2);
+    int y = player.y + (player.height / 2);
+    int x2 = player.x + player.dx*5 + (player.width / 2);
+    int y2 = player.y + player.dy*5 + (player.height / 2);
+
+    SDL_RenderDrawLine(renderer, x, y, x2, y2);
 
     SDL_RenderPresent(renderer);
 }
