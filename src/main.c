@@ -40,6 +40,68 @@ struct rectangle {
     float height;
 } player;
 
+void drawRays3D() 
+{
+    // raynum, 
+    //dof - depth of field
+    int r, mx, my, dof;
+    //rx. ry - first horizontal line hits
+    //ra - ray angle
+    //xo, yo - x and y offsets
+    float rx, ry, ra, xo, yo;
+
+    ra = player.a;
+
+    for(r = 0; r < 1; r++)
+    {
+        // Check horizontal lines
+        dof = 0;
+        float aTan = -1/tan(ra);
+
+        if(ra > PI) //looking up
+        {
+            ry = (((int)player.y>>6)<<6)-0.0001;
+            rx = (player.y - ry) * aTan + player.x;
+            yo = -64;
+            xo = -yo * aTan;
+        }
+        else if(ra < PI) //looking down
+        {
+            ry = (((int)player.y>>6)<<6)+64;
+            rx = (player.y - ry) * aTan + player.x;
+            yo = 64;
+            xo = -yo * aTan;
+        }
+        if (ra == 0 || ra == PI) //looking straight left of right
+        {
+            rx = player.x;
+            ry = player.y;
+            dof = 8;
+        }
+
+        while(dof < 8)
+        {
+            mx = (int) (rx)>>6;
+            my = (int) (ry)>>6;
+            if (map[my][mx] == 1) //hit wall
+            {
+                dof = 8;
+            } else // next line
+            { 
+                rx += xo; 
+                ry += yo;
+                dof += 1;
+            }
+        }
+        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+
+        int x = player.x  + (player.width / 2);
+        int y = player.y + (player.height / 2);
+
+        SDL_RenderDrawLine(renderer, x, y, rx, ry);
+    }
+}
+
 int main() {
     game_is_running = initialize_window();
 
@@ -225,6 +287,8 @@ void render() {
     int y2 = player.y + player.dy*5 + (player.height / 2);
 
     SDL_RenderDrawLine(renderer, x, y, x2, y2);
+
+    drawRays3D();
 
     SDL_RenderPresent(renderer);
 }
