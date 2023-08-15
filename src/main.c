@@ -47,7 +47,7 @@ float dist(float ax, float ay, float bx, float by) {
     return ( sqrt( y * y + x * x) );
 }
 
-void drawRays3D() 
+void drawRays2D() 
 {
     // raynum
     // mx, my - position of rays end in map
@@ -56,11 +56,15 @@ void drawRays3D()
     //rx. ry - first horizontal line hits
     //ra - ray angle
     //xo, yo - x and y offsets
-    float rx, ry, ra, xo, yo;
+    //disT - final distance
+    float rx, ry, ra, xo, yo, disT;
 
-    ra = player.a;
+    ra = player.a - DEGREE *30;
 
-    for(r = 0; r < 1; r++)
+    if(ra < 0) { ra += 2*PI;}
+    if(ra > 2*PI) { ra -= 2*PI;}
+
+    for(r = 0; r < RAY_NUM; r++)
     {
         // Check horizontal lines
         dof = 0;
@@ -76,12 +80,12 @@ void drawRays3D()
         }
         else if(ra < PI) //looking down
         {
-            ry = (((int)player.y/BOARD_SQUARE + 1)*BOARD_SQUARE);
+            ry = (((int)player.y/BOARD_SQUARE) + 1) * BOARD_SQUARE;
             rx = (player.y - ry) * aTan + player.x;
             yo = BOARD_SQUARE;
             xo = -yo * aTan;
         }
-        if (ra == 0 || ra == PI) //looking straight left of right
+        else if (ra == 0 || ra == PI) //looking straight left of right
         {
             rx = player.x;
             ry = player.y;
@@ -91,20 +95,23 @@ void drawRays3D()
         {
             mx = (int) (rx)/BOARD_SQUARE;
             my = (int) (ry)/BOARD_SQUARE;
-            if (map[my][mx] == 1) //hit wall
-            {
-                hx = rx;
-                hy = ry;
-                disH = dist(player.x, player.y, hx, hy);
-                dof = 8;
-            } else // next line
-            { 
-                rx += xo; 
-                ry += yo;
-                dof += 1;
-            }
-        }
 
+            if (mx < BOARD_SQUARE && my < BOARD_SQUARE && mx >= 0 && my >= 0)
+            {
+                if (map[my][mx] == 1) //hit wall
+                {
+                    hx = rx;
+                    hy = ry;
+                    disH = dist(player.x, player.y, hx, hy);
+                    dof = 8;
+                } else // next line
+                { 
+                    rx += xo; 
+                    ry += yo;
+                    dof += 1;
+                }
+            } else dof = 8;
+        }
 
         // Check vertical lines
         dof = 0;
@@ -125,7 +132,7 @@ void drawRays3D()
             xo = BOARD_SQUARE;
             yo = -xo * nTan;
         }
-        if (ra == PI/2 || ra == 3 * PI/2) //looking straight up of down
+        else if (ra == PI/2 || ra == 3 * PI/2) //looking straight up of down
         {
             rx = player.x;
             ry = player.y;
@@ -154,14 +161,34 @@ void drawRays3D()
         if (disV < disH) {
             rx = vx;
             ry = vy;
+            disT = disV;
         } else if (disV >= disH) {
             rx = hx;
             ry = hy;
+            disT = disH;
         }
 
         SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
 
         SDL_RenderDrawLine(renderer, player.x, player.y, rx, ry);
+
+        //Draw 3D walls
+        float lineH = (BOARD_SIZE * WINDOW_HEIGHT) / disT;
+        if (lineH > WINDOW_HEIGHT) lineH = WINDOW_HEIGHT;
+
+        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+
+        SDL_Rect wall = {
+            r * LINE_WIDTH + WINDOW_WIDTH,
+            BOARD_SQUARE,
+            LINE_WIDTH,
+            lineH
+            };
+        SDL_RenderFillRect(renderer, &wall);
+
+        ra += DEGREE;
+        if(ra < 0) { ra += 2*PI;}
+        if(ra > 2*PI) { ra -= 2*PI;}
     }
 }
 
@@ -198,8 +225,8 @@ int initialize_window(void) {
         NULL,
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
-        WINDOW_SIZE,
-        WINDOW_SIZE,
+        WINDOW_WIDTH,
+        WINDOW_HEIGHT,
         SDL_WINDOW_BORDERLESS
     );
     if (!window) {
@@ -221,8 +248,8 @@ int initialize_window(void) {
 }
 
 void setup() {
-    player.x = WINDOW_SIZE / 2;
-    player.y = WINDOW_SIZE / 2;
+    player.x = WINDOW_WIDTH / 2;
+    player.y = WINDOW_HEIGHT / 2;
     player.width = 10;
     player.height = 10;
 }
@@ -255,7 +282,7 @@ void process_input() {
     // Update player positions based on key states
     if (keys[SDL_SCANCODE_A])
     {
-        player.a -= 0.1;
+        player.a -= 0.03;
         if (player.a < 0) {
             player.a += 2*PI;
         }
@@ -265,7 +292,7 @@ void process_input() {
 
     if (keys[SDL_SCANCODE_D])
     {
-        player.a += 0.1;
+        player.a += 0.03;
         if (player.a > 2*PI){
             player.a -= 2*PI;
         }
@@ -288,11 +315,7 @@ void process_input() {
 
 
 void update() {
-    // Bad way, takes 100% of processor 
-    // waste time to reach frame time
-    //while (!SDL_TICKS_PASSED(SDL_GetTicks(), last_frame_time + FRAME_TARGET_TIME));
 
-    // Better way is to use proper delay function
     int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - last_frame_time);
     
     if (time_to_wait > 0 && time_to_wait <= FRAME_TARGET_TIME) {
@@ -351,7 +374,7 @@ void render() {
 
     SDL_RenderDrawLine(renderer, x, y, x2, y2);
 
-    drawRays3D();
+    drawRays2D();
 
     SDL_RenderPresent(renderer);
 }
