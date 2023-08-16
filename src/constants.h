@@ -4,10 +4,13 @@
 #define BOARD_SIZE 8
 #define BOARD_SQUARE (WINDOW_HEIGHT / BOARD_SIZE)
 
-#define FPS 140
+#define FPS 60
 #define FRAME_TARGET_TIME (1000 / FPS)
 
-#define PLAYER_SPEED 50
+#define PLAYER_SPEED 25 //optimal 25
+#define PLAYER_ROTATION_SPEED 2 //optimal 2
+
+#define PLAYER_LINE_LENGHT 5
 
 #define RAY_NUM 60
 #define LINE_WIDTH (WINDOW_WIDTH/(2*RAY_NUM))
