@@ -96,7 +96,7 @@ void drawRays2D()
             mx = (int) (rx)/BOARD_SQUARE;
             my = (int) (ry)/BOARD_SQUARE;
 
-            if (mx < BOARD_SQUARE && my < BOARD_SQUARE && mx >= 0 && my >= 0)
+            if (mx < BOARD_SIZE && my < BOARD_SIZE && mx >= 0 && my >= 0)
             {
                 if (map[my][mx] == 1) //hit wall
                 {
@@ -143,18 +143,22 @@ void drawRays2D()
         {
             mx = (int) (rx)/BOARD_SQUARE;
             my = (int) (ry)/BOARD_SQUARE;
-            if (map[my][mx] == 1) //hit wall
+
+            if (mx < BOARD_SIZE && my < BOARD_SIZE && mx >= 0 && my >= 0)
             {
-                vx = rx;
-                vy = ry;
-                disV = dist(player.x, player.y, vx, vy);
-                dof = 8;
-            } else // next line
-            { 
-                rx += xo; 
-                ry += yo;
-                dof += 1;
-            }
+                if (map[my][mx] == 1) //hit wall
+                {
+                    vx = rx;
+                    vy = ry;
+                    disV = dist(player.x, player.y, vx, vy);
+                    dof = 8;
+                } else // next line
+                { 
+                    rx += xo; 
+                    ry += yo;
+                    dof += 1;
+                }
+            } else dof = 8;
         }
 
         //Check if horizontal or vertical is shorter, and draw the shorter one
