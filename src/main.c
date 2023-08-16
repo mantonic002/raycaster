@@ -162,25 +162,31 @@ void drawRays2D()
             rx = vx;
             ry = vy;
             disT = disV;
+            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+
         } else if (disV >= disH) {
             rx = hx;
             ry = hy;
             disT = disH;
+            SDL_SetRenderDrawColor(renderer, 50, 50, 255, 255);
         }
 
-        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
 
         SDL_RenderDrawLine(renderer, player.x, player.y, rx, ry);
 
         //Draw 3D walls
+        float ca = player.a - ra;
+        if (ca < 0) ca += 2*PI; 
+        if (ca > 2*PI) ca -= 2*PI;
+        disT = disT * cos(ca); 
         float lineH = (BOARD_SIZE * WINDOW_HEIGHT) / disT;
-        if (lineH > WINDOW_HEIGHT) lineH = WINDOW_HEIGHT;
+        //if (lineH > WINDOW_HEIGHT/2) lineH = WINDOW_HEIGHT/2;
 
-        SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+        float offset = WINDOW_HEIGHT/2 - lineH/2;
 
         SDL_Rect wall = {
-            r * LINE_WIDTH + WINDOW_WIDTH,
-            BOARD_SQUARE,
+            r * LINE_WIDTH + WINDOW_WIDTH/2,
+            offset,
             LINE_WIDTH,
             lineH
             };
@@ -248,7 +254,7 @@ int initialize_window(void) {
 }
 
 void setup() {
-    player.x = WINDOW_WIDTH / 2;
+    player.x = WINDOW_WIDTH / 4;
     player.y = WINDOW_HEIGHT / 2;
     player.width = 10;
     player.height = 10;
