@@ -25,9 +25,9 @@ int map[BOARD_SIZE][BOARD_SIZE] = {
     {1, 1, 1, 1, 1, 1, 1, 1},
     {1, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 1, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 1, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 1, 0, 0, 1},
+    {1, 0, 1, 0, 1, 0, 0, 1},
     {1, 0, 0, 0, 1, 0, 0, 1},
     {1, 1, 1, 1, 1, 1, 1, 1},
     
@@ -47,6 +47,13 @@ float dist(float ax, float ay, float bx, float by) {
     return ( sqrt( y * y + x * x) );
 }
 
+float fixAng(float a){ 
+    if(a >= 2*PI){ a -= 2*PI;} 
+    if(a < 0){ a += 2*PI; } 
+    return a;
+    }
+
+
 void drawRays2D() 
 {
     // raynum
@@ -59,16 +66,14 @@ void drawRays2D()
     //disT - final distance
     float rx, ry, ra, xo, yo, disT;
 
-    ra = player.a - DEGREE *30;
 
-    if(ra < 0) { ra += 2*PI;}
-    if(ra > 2*PI) { ra -= 2*PI;}
+    ra = fixAng(player.a - (DEGREE * 30));
 
     for(r = 0; r < RAY_NUM; r++)
     {
         // Check horizontal lines
         dof = 0;
-        float hx = player.x, hy = player.y, disH;
+        float hx = player.x, hy = player.y, disH = 100000;
         float aTan = -1/tan(ra);
 
         if(ra > PI) //looking up
@@ -115,7 +120,7 @@ void drawRays2D()
 
         // Check vertical lines
         dof = 0;
-        float vx = player.x, vy = player.y, disV;
+        float vx = player.x, vy = player.y, disV = 100000;
         float nTan = -tan(ra);
 
         if(ra > PI/2 && ra < 3 * PI/2) //looking left
@@ -172,16 +177,15 @@ void drawRays2D()
             rx = hx;
             ry = hy;
             disT = disH;
-            SDL_SetRenderDrawColor(renderer, 50, 50, 255, 255);
+            SDL_SetRenderDrawColor(renderer, 100, 100, 255, 255);
         }
 
 
         SDL_RenderDrawLine(renderer, player.x, player.y, rx, ry);
 
         //Draw 3D walls
-        float ca = player.a - ra;
-        if (ca < 0) ca += 2*PI; 
-        if (ca > 2*PI) ca -= 2*PI;
+        float ca = fixAng(player.a - ra);
+
         disT = disT * cos(ca); 
         float lineH = (BOARD_SIZE * WINDOW_HEIGHT) / disT;
         //if (lineH > WINDOW_HEIGHT/2) lineH = WINDOW_HEIGHT/2;
@@ -196,9 +200,7 @@ void drawRays2D()
             };
         SDL_RenderFillRect(renderer, &wall);
 
-        ra += DEGREE;
-        if(ra < 0) { ra += 2*PI;}
-        if(ra > 2*PI) { ra -= 2*PI;}
+        ra = fixAng(ra + DEGREE);
     }
 }
 
@@ -343,6 +345,27 @@ void render() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
+    SDL_Rect ceel = {
+        WINDOW_WIDTH/2 + 1,
+        0,
+        WINDOW_WIDTH/2 - 20,
+        WINDOW_HEIGHT/2
+    };
+
+    SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
+    SDL_RenderFillRect(renderer, &ceel);
+
+    SDL_Rect floor = {
+        WINDOW_WIDTH/2 + 1,
+        WINDOW_HEIGHT/2,
+        WINDOW_WIDTH/2 - 20,
+        WINDOW_HEIGHT/2
+    };
+
+    SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
+    SDL_RenderFillRect(renderer, &floor);
+
+
     for (int i = 0; i < BOARD_SIZE; i++)
     {
         for (int j = 0; j < BOARD_SIZE; j++)
@@ -365,26 +388,36 @@ void render() {
     }
 
     // Draw player
-    SDL_Rect p = {
-        (int)player.x,
-        (int)player.y,
-        (int)player.width,
-        (int)player.height
-    };
+    // SDL_Rect p = {
+    //     (int)player.x,
+    //     (int)player.y,
+    //     (int)player.width,
+    //     (int)player.height
+    // };
 
+
+    // SDL_RenderFillRect(renderer, &p);
+
+
+    // int x = player.x  + (player.width / 2);
+    // int y = player.y + (player.height / 2);
+
+    int x = player.x;
+    int y = player.y;
+
+
+    // int x2 = player.x + player.dx*5 + (player.width / 2);
+    // int y2 = player.y + player.dy*5 + (player.height / 2);
+
+    int x2 = player.x + player.dx*5;
+    int y2 = player.y + player.dy*5;
+
+    drawRays2D();
 
     SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
-    SDL_RenderFillRect(renderer, &p);
-
-
-    int x = player.x  + (player.width / 2);
-    int y = player.y + (player.height / 2);
-    int x2 = player.x + player.dx*5 + (player.width / 2);
-    int y2 = player.y + player.dy*5 + (player.height / 2);
 
     SDL_RenderDrawLine(renderer, x, y, x2, y2);
 
-    drawRays2D();
 
     SDL_RenderPresent(renderer);
 }
