@@ -405,21 +405,22 @@ void drawRays2D()
             } else dof = 8;
         }
 
+        float shade;
+
         //Check if horizontal or vertical is shorter, and draw the shorter one
         if (disV < disH) {
             rx = vx;
             ry = vy;
             disT = disV;
-            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
-
+            shade = 1;
         } else if (disV >= disH) {
             rx = hx;
             ry = hy;
             disT = disH;
-            SDL_SetRenderDrawColor(renderer, 100, 100, 255, 255);
+            shade = 0.5;
         }
 
-
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
         SDL_RenderDrawLine(renderer, player.x, player.y, rx, ry);
 
         //Draw 3D walls
@@ -427,17 +428,48 @@ void drawRays2D()
 
         disT = disT * cos(ca); 
         float lineH = ((BOARD_SIZE * WINDOW_HEIGHT) / disT) * 3;
-        //if (lineH > WINDOW_HEIGHT/2) lineH = WINDOW_HEIGHT/2;
 
-        float offset = WINDOW_HEIGHT/2 - lineH/2;
+        float ty_step = 32.0/(float)lineH;
+        float ty_off = 0;
 
-        SDL_Rect wall = {
-            r * LINE_WIDTH + WINDOW_WIDTH/2,
-            offset,
-            LINE_WIDTH,
-            lineH
-            };
-        SDL_RenderFillRect(renderer, &wall);
+        if (lineH > WINDOW_HEIGHT) {
+            ty_off = (lineH - WINDOW_HEIGHT) / 2.0;
+            lineH = WINDOW_HEIGHT;
+        }
+        float offset = WINDOW_HEIGHT / 2 - lineH/2;
+
+        int y;
+        float ty = ty_off * ty_step;
+        // float tx = (int)(rx / 2.0) % 32;
+        // if (ra > PI) (tx = 31 - tx);
+
+        float tx;
+        if (shade == 1) {
+            tx = (int)(ry / 2.0) % 32;
+            if (ra > PI/2 && ra < 3*PI/2) tx = 31 - tx;
+        } 
+        else {
+            tx = (int)(rx / 2.0) % 32;
+            if (ra < PI)  tx = 31 - tx;        
+        }
+
+        ty += 32;
+
+        for (y = 0 ; y < lineH ; y++) {
+
+            float c = All_Textures[(int)(ty)*32 + (int)(tx)]*255*shade;
+            SDL_SetRenderDrawColor(renderer, c, c, c, 255);
+            SDL_Rect wall = {
+                r * LINE_WIDTH + WINDOW_WIDTH/2,
+                y + offset,
+                LINE_WIDTH,
+                1
+                };
+            SDL_RenderFillRect(renderer, &wall);
+            ty+=ty_step;
+        }
+
+
 
         ra = fixAng(ra + DEGREE);
     }
