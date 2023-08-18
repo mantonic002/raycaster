@@ -27,14 +27,14 @@ float delta_time = 0.0f;
 bool keys[SDL_NUM_SCANCODES] = { false };
 
 int map[BOARD_SIZE][BOARD_SIZE] = {
-    {1, 1, 1, 1, 1, 1, 1, 1},
+    {1, 1, 1, 1, 3, 1, 1, 1},
     {1, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 1, 0, 0, 0, 0, 1},
-    {1, 0, 0, 0, 0, 1, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 1},
-    {1, 0, 1, 0, 1, 0, 0, 1},
-    {1, 0, 0, 0, 1, 0, 0, 1},
-    {1, 1, 1, 1, 1, 1, 1, 1},
+    {3, 0, 0, 0, 0, 0, 0, 4},
+    {1, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 1},
+    {1, 0, 0, 0, 0, 0, 0, 1},
+    {1, 1, 1, 1, 3, 1, 1, 1},
     
 };
 
@@ -228,10 +228,10 @@ void render() {
         for (int j = 0; j < BOARD_SIZE; j++)
         {
 
-            if (map[i][j] == 1) 
+            if (map[i][j] > 0) 
             {
-                SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-
+                SDL_SetRenderDrawColor(renderer, 255, 255,255, 255);
+ 
                 SDL_Rect wall = {
                     j*BOARD_SQUARE,
                     i*BOARD_SQUARE ,
@@ -305,11 +305,12 @@ void drawRays2D()
     //disT - final distance
     float rx, ry, ra, xo, yo, disT;
 
-
     ra = fixAng(player.a - (DEGREE * 30));
 
     for(r = 0; r < RAY_NUM; r++)
     {
+        int vmt = 0, hmt = 0; // vertical and horizontal map texture num
+
         // Check horizontal lines
         dof = 0;
         float hx = player.x, hy = player.y, disH = 100000;
@@ -342,12 +343,13 @@ void drawRays2D()
 
             if (mx < BOARD_SIZE && my < BOARD_SIZE && mx >= 0 && my >= 0)
             {
-                if (map[my][mx] == 1) //hit wall
+                if (map[my][mx] > 0) //hit wall
                 {
                     hx = rx;
                     hy = ry;
                     disH = dist(player.x, player.y, hx, hy);
                     dof = 8;
+                    hmt = map[my][mx] - 1;
                 } else // next line
                 { 
                     rx += xo; 
@@ -390,12 +392,13 @@ void drawRays2D()
 
             if (mx < BOARD_SIZE && my < BOARD_SIZE && mx >= 0 && my >= 0)
             {
-                if (map[my][mx] == 1) //hit wall
+                if (map[my][mx] > 0) //hit wall
                 {
                     vx = rx;
                     vy = ry;
                     disV = dist(player.x, player.y, vx, vy);
                     dof = 8;
+                    vmt = map[my][mx] - 1;
                 } else // next line
                 { 
                     rx += xo; 
@@ -409,6 +412,7 @@ void drawRays2D()
 
         //Check if horizontal or vertical is shorter, and draw the shorter one
         if (disV < disH) {
+            hmt = vmt;
             rx = vx;
             ry = vy;
             disT = disV;
@@ -429,7 +433,7 @@ void drawRays2D()
         disT = disT * cos(ca); 
         float lineH = ((BOARD_SIZE * WINDOW_HEIGHT) / disT) * 3;
 
-        float ty_step = 32.0/(float)lineH;
+        float ty_step = 32/(float)lineH;
         float ty_off = 0;
 
         if (lineH > WINDOW_HEIGHT) {
@@ -438,23 +442,20 @@ void drawRays2D()
         }
         float offset = WINDOW_HEIGHT / 2 - lineH/2;
 
+        // drawing textures
         int y;
-        float ty = ty_off * ty_step;
-        // float tx = (int)(rx / 2.0) % 32;
-        // if (ra > PI) (tx = 31 - tx);
+        float ty = ty_off * ty_step + hmt*32;
 
         float tx;
         if (shade == 1) {
-            tx = (int)(ry / 2.0) % 32;
+            tx = (int)(ry / ((float) BOARD_SQUARE / 32)) % 32;
             if (ra > PI/2 && ra < 3*PI/2) tx = 31 - tx;
         } 
         else {
-            tx = (int)(rx / 2.0) % 32;
+            tx = (int)(rx / ((float) BOARD_SQUARE / 32)) % 32;
             if (ra < PI)  tx = 31 - tx;        
         }
-
-        ty += 32;
-
+        
         for (y = 0 ; y < lineH ; y++) {
 
             float c = All_Textures[(int)(ty)*32 + (int)(tx)]*255*shade;
@@ -468,8 +469,6 @@ void drawRays2D()
             SDL_RenderFillRect(renderer, &wall);
             ty+=ty_step;
         }
-
-
 
         ra = fixAng(ra + DEGREE);
     }
