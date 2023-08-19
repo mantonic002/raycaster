@@ -27,14 +27,14 @@ float delta_time = 0.0f;
 bool keys[SDL_NUM_SCANCODES] = { false };
 
 int map[BOARD_SIZE][BOARD_SIZE] = {
-    {1, 1, 1, 1, 3, 1, 1, 1},
+    {1, 1, 1, 1, 4, 1, 1, 1},
     {1, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 1},
-    {3, 0, 0, 0, 0, 0, 0, 4},
+    {4, 0, 0, 0, 0, 0, 0, 4},
     {1, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 1},
-    {1, 1, 1, 1, 3, 1, 1, 1},
+    {1, 1, 1, 1, 4, 1, 1, 1},
     
 };
 
@@ -60,7 +60,7 @@ int main() {
     return 0;
 }
 
-
+//----function for initializing sdl window and renderer------
 int initialize_window(void) {
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
         fprintf(stderr, "Error initializing SDL.\n");
@@ -103,6 +103,7 @@ void setup() {
     player.dy = sin(player.a) * PLAYER_LINE_LENGHT;
 }
 
+//-----function for changing game state based on players input-----
 void process_input() {
     SDL_Event event;
 
@@ -178,10 +179,16 @@ void process_input() {
         if (map[ipy][ipx_add_xo] == 0) player.x += PLAYER_SPEED * delta_time * player.dx;
         if (map[ipy_add_yo][ipx] == 0) player.y += PLAYER_SPEED * delta_time * player.dy;
     }
+
+    if (keys[SDL_SCANCODE_E])
+    {
+        if (map[ipy][ipx_add_xo] == 4) map[ipy][ipx_add_xo] = 0;
+        if (map[ipy_add_yo][ipx] == 4) map[ipy_add_yo][ipx] = 0;
+    }
 }
 
 
-//----function that updates the state of the game----
+//----function that keeps consistent frame rate----
 void update() {
 
     int time_to_wait = FRAME_TARGET_TIME - (SDL_GetTicks() - last_frame_time);
@@ -202,6 +209,7 @@ void render() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
+    //rendering ceeling
     SDL_Rect ceel = {
         WINDOW_WIDTH/2 + 1,
         0,
@@ -212,6 +220,7 @@ void render() {
     SDL_SetRenderDrawColor(renderer, 128, 128, 128, 255);
     SDL_RenderFillRect(renderer, &ceel);
 
+    //rendering floor
     SDL_Rect floor = {
         WINDOW_WIDTH/2 + 1,
         WINDOW_HEIGHT/2,
@@ -222,7 +231,7 @@ void render() {
     SDL_SetRenderDrawColor(renderer, 200, 200, 200, 255);
     SDL_RenderFillRect(renderer, &floor);
 
-
+    //-----draw walls
     for (int i = 0; i < BOARD_SIZE; i++)
     {
         for (int j = 0; j < BOARD_SIZE; j++)
@@ -244,27 +253,9 @@ void render() {
         }
     }
 
-    // Draw player
-    // SDL_Rect p = {
-    //     (int)player.x,
-    //     (int)player.y,
-    //     (int)player.width,
-    //     (int)player.height
-    // };
-
-
-    // SDL_RenderFillRect(renderer, &p);
-
-
-    // int x = player.x  + (player.width / 2);
-    // int y = player.y + (player.height / 2);
-
+    // draw player
     int x = player.x;
     int y = player.y;
-
-
-    // int x2 = player.x + player.dx*5 + (player.width / 2);
-    // int y2 = player.y + player.dy*5 + (player.height / 2);
 
     int x2 = player.x + player.dx*5;
     int y2 = player.y + player.dy*5;
@@ -297,7 +288,7 @@ void drawRays2D()
 {
     // raynum
     // mx, my - position of rays end in map
-    //dof - depth of field
+    // dof - depth of field
     int r, mx, my, dof;
     //rx. ry - first horizontal line hits
     //ra - ray angle
@@ -474,6 +465,7 @@ void drawRays2D()
     }
 }
 
+//-----function that destroys the window and quits the game--------
 void destroy_window() {
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
