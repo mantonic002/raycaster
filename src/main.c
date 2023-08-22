@@ -13,17 +13,28 @@ typedef struct Rectangle {
 
 
 int initialize_window(SDL_Window **window, SDL_Renderer **renderer);
-void setup(Rectangle player);
-int process_input(bool *keys, Rectangle player, float *delta_time);
+void setup(Rectangle *player);
+int process_input(bool *keys, Rectangle *player, int map[BOARD_SIZE][BOARD_SIZE], float *delta_time);
 void update(int *last_frame_time, float *delta_time);
-void render(SDL_Renderer **renderer, Rectangle player);
-void destroy_window(SDL_Window *window, SDL_Renderer *renderer);
-void drawRays2D(SDL_Renderer **renderer, Rectangle player);
+void render(SDL_Renderer **renderer, Rectangle player, int map[BOARD_SIZE][BOARD_SIZE]);
+void destroy_window(SDL_Window **window, SDL_Renderer **renderer);
+void drawRays2D(SDL_Renderer **renderer, Rectangle player, int map[BOARD_SIZE][BOARD_SIZE]);
 float dist(float ax, float ay, float bx, float by);
 float fixAng(float a);
 
 
-int map[BOARD_SIZE][BOARD_SIZE] = {
+int main() {
+    SDL_Window *window = NULL;
+    SDL_Renderer *renderer = NULL;
+
+    // bool that is true if game is running
+    bool game_is_running = initialize_window(&window, &renderer);
+
+    // 2D array for the games map'
+    // 0  empty space
+    // 1 - 3  walls with different textures
+    // 4  doors
+    int map[BOARD_SIZE][BOARD_SIZE] = {
     {1, 1, 1, 1, 4, 1, 1, 1},
     {1, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 1},
@@ -32,31 +43,26 @@ int map[BOARD_SIZE][BOARD_SIZE] = {
     {1, 0, 0, 0, 0, 0, 0, 1},
     {1, 0, 0, 0, 0, 0, 0, 1},
     {1, 1, 1, 1, 4, 1, 1, 1},
-    
-};
-
-int main() {
-    SDL_Window *window = NULL;
-    SDL_Renderer *renderer = NULL;
-
-    bool game_is_running = initialize_window(&window, &renderer);
+    };
 
     Rectangle player;
     
+    // variables for keeping fps consistent
     int last_frame_time = 0;
     float delta_time = 0.0f;
 
+    // array for keeping track of which buttons are pressed
     bool keys[SDL_NUM_SCANCODES] = { false };
 
-    setup(player);
+    setup(&player);
     
     while (game_is_running) {
-        if (!process_input(keys, player, &delta_time)) game_is_running = false;
+        if (!process_input(keys, &player, map, &delta_time)) game_is_running = false;
         update(&last_frame_time, &delta_time);
-        render(&renderer, player);
+        render(&renderer, player, map);
     }
 
-    destroy_window(window, renderer);
+    destroy_window(&window, &renderer);
 
     return 0;
 }
@@ -68,7 +74,7 @@ int initialize_window(SDL_Window **window, SDL_Renderer **renderer) {
         return false;
     }
 
-    *window = SDL_CreateWindow(
+    *window = SDL_CreateWindow (
         NULL,
         SDL_WINDOWPOS_CENTERED,
         SDL_WINDOWPOS_CENTERED,
@@ -95,18 +101,18 @@ int initialize_window(SDL_Window **window, SDL_Renderer **renderer) {
     return true;
 }
 
-void setup(Rectangle player) {
-    player.x = WINDOW_WIDTH / 4;
-    player.y = WINDOW_HEIGHT / 2;
-    player.a = 0;
-    player.width = 10;
-    player.height = 10;
-    player.dx = cos(player.a) * PLAYER_LINE_LENGHT;
-    player.dy = sin(player.a) * PLAYER_LINE_LENGHT;
+void setup(Rectangle *player) {
+    player->x = WINDOW_WIDTH / 4;
+    player->y = WINDOW_HEIGHT / 2;
+    player->a = 0;
+    player->width = 10;
+    player->height = 10;
+    player->dx = cos(player->a) * PLAYER_LINE_LENGHT;
+    player->dy = sin(player->a) * PLAYER_LINE_LENGHT;
 }
 
 //-----function for changing game state based on players input-----
-int process_input(bool *keys, Rectangle player, float *delta_time) {
+int process_input(bool *keys, Rectangle *player, int map[BOARD_SIZE][BOARD_SIZE], float *delta_time) {
     SDL_Event event;
 
     while (SDL_PollEvent(&event)) {
@@ -133,49 +139,49 @@ int process_input(bool *keys, Rectangle player, float *delta_time) {
 
     // Update player positions based on key states
     if (keys[SDL_SCANCODE_A]) {
-        player.a -= PLAYER_ROTATION_SPEED * *delta_time;
-        if (player.a < 0) {
-            player.a += 2*PI;
+        player->a -= PLAYER_ROTATION_SPEED * *delta_time;
+        if (player->a < 0) {
+            player->a += 2*PI;
         }
-        player.dx = cos(player.a) * PLAYER_LINE_LENGHT;
-        player.dy = sin(player.a) * PLAYER_LINE_LENGHT;
+        player->dx = cos(player->a) * PLAYER_LINE_LENGHT;
+        player->dy = sin(player->a) * PLAYER_LINE_LENGHT;
     }
 
     if (keys[SDL_SCANCODE_D]) {
-        player.a += PLAYER_ROTATION_SPEED * *delta_time;
-        if (player.a > 2*PI){
-            player.a -= 2*PI;
+        player->a += PLAYER_ROTATION_SPEED * *delta_time;
+        if (player->a > 2*PI){
+            player->a -= 2*PI;
         }
-        player.dx = cos(player.a) * PLAYER_LINE_LENGHT;
-        player.dy = sin(player.a) * PLAYER_LINE_LENGHT;
+        player->dx = cos(player->a) * PLAYER_LINE_LENGHT;
+        player->dy = sin(player->a) * PLAYER_LINE_LENGHT;
     }
 
     //player offset depending on his position
     int xo = 0;
-    if (player.dx < 0) xo = -20;  else xo = 20;
+    if (player->dx < 0) xo = -20;  else xo = 20;
     
     int yo = 0;
-    if (player.dy < 0) yo = -20;  else yo = 20;
+    if (player->dy < 0) yo = -20;  else yo = 20;
 
     // players grid position
-    int ipx = player.x/BOARD_SQUARE;
-    int ipy = player.y/BOARD_SQUARE;
+    int ipx = player->x/BOARD_SQUARE;
+    int ipy = player->y/BOARD_SQUARE;
 
-    int ipx_add_xo = (player.x + xo)/BOARD_SQUARE;
-    int ipy_add_yo = (player.y + yo)/BOARD_SQUARE;
+    int ipx_add_xo = (player->x + xo)/BOARD_SQUARE;
+    int ipy_add_yo = (player->y + yo)/BOARD_SQUARE;
 
-    int ipx_sub_xo = (player.x - xo)/BOARD_SQUARE;
-    int ipy_sub_yo = (player.y - yo)/BOARD_SQUARE;
+    int ipx_sub_xo = (player->x - xo)/BOARD_SQUARE;
+    int ipy_sub_yo = (player->y - yo)/BOARD_SQUARE;
 
 
     if (keys[SDL_SCANCODE_S]) {    
-        if (map[ipy][ipx_sub_xo] == 0) player.x -= PLAYER_SPEED * (*delta_time) * player.dx;
-        if (map[ipy_sub_yo][ipx] == 0) player.y -= PLAYER_SPEED * (*delta_time) * player.dy;
+        if (map[ipy][ipx_sub_xo] == 0) player->x -= PLAYER_SPEED * (*delta_time) * player->dx;
+        if (map[ipy_sub_yo][ipx] == 0) player->y -= PLAYER_SPEED * (*delta_time) * player->dy;
     }
 
     if (keys[SDL_SCANCODE_W]) {
-        if (map[ipy][ipx_add_xo] == 0) player.x += PLAYER_SPEED * *delta_time * player.dx;
-        if (map[ipy_add_yo][ipx] == 0) player.y += PLAYER_SPEED * *delta_time * player.dy;
+        if (map[ipy][ipx_add_xo] == 0) player->x += PLAYER_SPEED * *delta_time * player->dx;
+        if (map[ipy_add_yo][ipx] == 0) player->y += PLAYER_SPEED * *delta_time * player->dy;
     }
 
     if (keys[SDL_SCANCODE_E]) {
@@ -204,7 +210,7 @@ void update(int *last_frame_time, float *delta_time) {
 }
 
 //----function for rendering the 2D topdown game-----
-void render(SDL_Renderer **renderer, Rectangle player) {
+void render(SDL_Renderer **renderer, Rectangle player, int map[BOARD_SIZE][BOARD_SIZE]) {
     SDL_SetRenderDrawColor(*renderer, 0, 0, 0, 255);
     SDL_RenderClear(*renderer);
 
@@ -245,7 +251,6 @@ void render(SDL_Renderer **renderer, Rectangle player) {
                 };
                 SDL_RenderFillRect(*renderer, &wall);
             }
-
         }
     }
 
@@ -256,7 +261,7 @@ void render(SDL_Renderer **renderer, Rectangle player) {
     int x2 = player.x + player.dx*5;
     int y2 = player.y + player.dy*5;
 
-    drawRays2D(renderer, player);
+    drawRays2D(renderer, player, map);
 
     SDL_SetRenderDrawColor(*renderer, 255, 0, 0, 255);
 
@@ -281,7 +286,7 @@ float fixAng(float a) {
 }
 
 //-----function that calculates and casts rays, and draws walls------
-void drawRays2D(SDL_Renderer **renderer, Rectangle player) {
+void drawRays2D(SDL_Renderer **renderer, Rectangle player, int map[BOARD_SIZE][BOARD_SIZE]) {
     // raynum
     // mx, my - position of rays end in map
     // dof - depth of field
@@ -447,8 +452,8 @@ void drawRays2D(SDL_Renderer **renderer, Rectangle player) {
 }
 
 //-----function that destroys the window and quits the game--------
-void destroy_window(SDL_Window *window, SDL_Renderer *renderer) {
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
+void destroy_window(SDL_Window **window, SDL_Renderer **renderer) {
+    SDL_DestroyRenderer(*renderer);
+    SDL_DestroyWindow(*window);
     SDL_Quit();
 }
