@@ -1,3 +1,6 @@
+#ifndef GAME_CONSTANTS_H
+#define GAME_CONSTANTS_H
+
 #define WINDOW_HEIGHT 500
 #define WINDOW_WIDTH 1000
 
@@ -17,7 +20,6 @@
 
 #define PI 3.1415926535
 #define DEGREE 0.0174533 //degree in radians
-
 
 int All_Textures[]=               //all 32x32 textures
 {
@@ -166,3 +168,5 @@ int All_Textures[]=               //all 32x32 textures
  0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,1, 1,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,   
  0,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,1, 1,1,1,1,1,1,1,0,         
 };
+
+#endif // GAME_CONSTANTS_H
