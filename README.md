@@ -11,7 +11,7 @@ This repository contains a simple game written in C using SDL2 library for visua
 
 1. **Clone the Repository:** Get the code onto your computer by copying this repository.
 2. **Open Terminal:** Launch your terminal and navigate to the repository folder (`cd raycaster/`).
-3. **Compile and Run:** `make`to compile, then, start the game (`./game` or `make run`).
+3. **Compile and Run:** `make`to compile, then start the game (`./game` or `make run`).
 
 ### What You Need
 
