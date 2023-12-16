@@ -2,6 +2,7 @@
 
 This repository contains a simple game written in C using SDL2 library for visuals.
 
+Try it [here](https://mantonic002.github.io/raycaster.github.io/) compiled as WebAssembly using emscripten.
 ## What's Inside?
 
 - ### Simple 2D game turned into a pseudo 3D game using rays.
