@@ -41,8 +41,8 @@ int initialize_window(SDL_Window **window, SDL_Renderer **renderer) {
 }
 
 void setup(Rectangle *player) {
-    player->x = WINDOW_WIDTH / 4;
-    player->y = WINDOW_HEIGHT / 2;
+    player->x = BOARD_SQUARE * 1.5;
+    player->y = BOARD_SQUARE * 1.5;
     player->a = 0;
     player->width = 10;
     player->height = 10;

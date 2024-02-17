@@ -3,9 +3,9 @@
 
 #include "./constants.h"
 
-#define PLAYER_SPEED 25 //optimal 25
-#define PLAYER_ROTATION_SPEED 2 //optimal 2
+#define PLAYER_SPEED 10 //optimal 25
+#define PLAYER_ROTATION_SPEED 4 //optimal 
 
-int process_input(bool *keys, Rectangle *player, int map[BOARD_SIZE][BOARD_SIZE], float *delta_time);
+int process_input(bool *keys, Rectangle *player, int **map, float *delta_time);
 
 #endif // GAME_H

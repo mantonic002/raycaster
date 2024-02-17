@@ -8,7 +8,7 @@
 #include "./draw.h"
 
 //----function for rendering the 2D topdown game-----
-void render(SDL_Renderer **renderer, Rectangle player, int map[BOARD_SIZE][BOARD_SIZE]) {
+void render(SDL_Renderer **renderer, Rectangle player, int **map) {
     SDL_SetRenderDrawColor(*renderer, 0, 0, 0, 255);
     SDL_RenderClear(*renderer);
 
@@ -84,7 +84,7 @@ float fixAng(float a) {
 }
 
 //-----function that calculates and casts rays, and draws walls------
-void drawRays2D(SDL_Renderer **renderer, Rectangle player, int map[BOARD_SIZE][BOARD_SIZE]) {
+void drawRays2D(SDL_Renderer **renderer, Rectangle player, int **map) {
     // raynum
     // mx, my - position of rays end in map
     // dof - depth of field
@@ -206,7 +206,7 @@ void drawRays2D(SDL_Renderer **renderer, Rectangle player, int map[BOARD_SIZE][B
         float ca = fixAng(player.a - ra);
 
         disT = disT * cos(ca); 
-        float lineH = ((BOARD_SIZE * WINDOW_HEIGHT) / disT) * 3;
+        float lineH = ((BOARD_SIZE * WINDOW_HEIGHT) / disT);
 
         float ty_step = 32/(float)lineH;
         float ty_off = 0;

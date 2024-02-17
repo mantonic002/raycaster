@@ -7,7 +7,7 @@
 #include "./game.h"
 
 //-----function for changing game state based on players input-----
-int process_input(bool *keys, Rectangle *player, int map[BOARD_SIZE][BOARD_SIZE], float *delta_time) {
+int process_input(bool *keys, Rectangle *player, int **map, float *delta_time) {
     SDL_Event event;
 
     while (SDL_PollEvent(&event)) {
@@ -53,10 +53,10 @@ int process_input(bool *keys, Rectangle *player, int map[BOARD_SIZE][BOARD_SIZE]
 
     //player offset depending on his position
     int xo = 0;
-    if (player->dx < 0) xo = -20;  else xo = 20;
+    if (player->dx < 0) xo = -5;  else xo = 5;
     
     int yo = 0;
-    if (player->dy < 0) yo = -20;  else yo = 20;
+    if (player->dy < 0) yo = -5;  else yo = 5;
 
     // players grid position
     int ipx = player->x/BOARD_SQUARE;
