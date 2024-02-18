@@ -30,3 +30,10 @@ Try it [here](https://mantonic002.github.io/raycaster.github.io/) compiled as We
 - **SDL2 Library:** To see the visual representation, you'll need the SDL2 library.
 
 
+## What's next?
+
+- ### Maze game.
+  Presently in the works is a maze-generating algorithm based on Randomized depth-first search algorithm with randomly positioned doors throughout. Players will have the option to toggle between a first-person view and a top-down view for brief intervals, adding an extra layer of strategy to navigation.
+  
+  Go to maze branch to check out the progress.
+
