@@ -6,3 +6,9 @@ run:
 
 clean:
 	rm game
+
+build-wa:
+	emcc ./src/*.c -s WASM=1 -s USE_SDL=2 -o game.js
+
+run-wa:
+	emrun game.html

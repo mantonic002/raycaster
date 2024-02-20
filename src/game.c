@@ -7,7 +7,7 @@
 #include "./game.h"
 
 //-----function for changing game state based on players input-----
-int process_input(bool *keys, Rectangle *player, int **map, float *delta_time) {
+int process_input(bool *keys, Rectangle *player, int **map, float *delta_time, int *view) {
     SDL_Event event;
 
     while (SDL_PollEvent(&event)) {
@@ -19,6 +19,14 @@ int process_input(bool *keys, Rectangle *player, int **map, float *delta_time) {
         case SDL_KEYDOWN:
             if (event.key.keysym.sym == SDLK_ESCAPE)
                 return false;
+            else if (event.key.keysym.sym == SDLK_f){
+                if (*view == 0) {
+                    *view = 1;
+                } else {
+                    *view = 0;
+                }
+                break;
+            }
             else
                 keys[event.key.keysym.scancode] = true;
             break;

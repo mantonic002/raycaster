@@ -8,63 +8,73 @@
 #include "./draw.h"
 
 //----function for rendering the 2D topdown game-----
-void render(SDL_Renderer **renderer, Rectangle player, int **map) {
+void render(SDL_Renderer **renderer, Rectangle player, int **map, int *view) {
     SDL_SetRenderDrawColor(*renderer, 0, 0, 0, 255);
     SDL_RenderClear(*renderer);
 
-    //rendering ceeling
-    SDL_Rect ceel = {
-        WINDOW_WIDTH/2 + 1,
-        0,
-        WINDOW_WIDTH/2 - 20,
-        WINDOW_HEIGHT/2
-    };
 
-    SDL_SetRenderDrawColor(*renderer, 128, 128, 128, 255);
-    SDL_RenderFillRect(*renderer, &ceel);
+    if (*view == 0) {
+        //rendering ceeling
+        SDL_Rect ceel = {
+            0,
+            0,
+            WINDOW_WIDTH,
+            WINDOW_HEIGHT/2
+        };
 
-    //rendering floor
-    SDL_Rect floor = {
-        WINDOW_WIDTH/2 + 1,
-        WINDOW_HEIGHT/2,
-        WINDOW_WIDTH/2 - 20,
-        WINDOW_HEIGHT/2
-    };
+        SDL_SetRenderDrawColor(*renderer, 128, 128, 128, 255);
+        SDL_RenderFillRect(*renderer, &ceel);
 
-    SDL_SetRenderDrawColor(*renderer, 200, 200, 200, 255);
-    SDL_RenderFillRect(*renderer, &floor);
+        //rendering floor
+        SDL_Rect floor = {
+            0,
+            WINDOW_HEIGHT/2,
+            WINDOW_WIDTH,
+            WINDOW_HEIGHT/2
+        };
 
-    //-----draw walls
-    for (int i = 0; i < BOARD_SIZE; i++) {
-        for (int j = 0; j < BOARD_SIZE; j++) {
+        SDL_SetRenderDrawColor(*renderer, 200, 200, 200, 255);
+        SDL_RenderFillRect(*renderer, &floor);
 
-            if (map[i][j] > 0) {
-                SDL_SetRenderDrawColor(*renderer, 255, 255,255, 255);
- 
-                SDL_Rect wall = {
-                    j*BOARD_SQUARE,
-                    i*BOARD_SQUARE ,
-                    BOARD_SQUARE - 1,
-                    BOARD_SQUARE - 1
-                };
-                SDL_RenderFillRect(*renderer, &wall);
+        drawRays2D(renderer, player, map);
+    } else {
+        //-----draw walls
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            for (int j = 0; j < BOARD_SIZE; j++) {
+
+                if (map[i][j] > 0) {
+                    SDL_SetRenderDrawColor(*renderer, 255, 255,255, 255);
+    
+                    SDL_Rect wall = {
+                        j*BOARD_SQUARE,
+                        i*BOARD_SQUARE ,
+                        BOARD_SQUARE - 1,
+                        BOARD_SQUARE - 1
+                    };
+                    SDL_RenderFillRect(*renderer, &wall);
+                }
             }
         }
+
+        // draw player
+        int x = player.x;
+        int y = player.y;
+
+        int x2 = player.x + player.dx*3;
+        int y2 = player.y + player.dy*3;
+
+        SDL_Rect p = {
+            player.x - 5,
+            player.y - 5,
+            10,
+            10
+        };
+
+        SDL_SetRenderDrawColor(*renderer, 255, 0, 0, 255);
+
+        SDL_RenderFillRect(*renderer, &p);
+        SDL_RenderDrawLine(*renderer, x, y, x2, y2);
     }
-
-    // draw player
-    int x = player.x;
-    int y = player.y;
-
-    int x2 = player.x + player.dx*5;
-    int y2 = player.y + player.dy*5;
-
-    drawRays2D(renderer, player, map);
-
-    SDL_SetRenderDrawColor(*renderer, 255, 0, 0, 255);
-
-    SDL_RenderDrawLine(*renderer, x, y, x2, y2);
-
 
     SDL_RenderPresent(*renderer);
 }
@@ -117,7 +127,7 @@ void drawRays2D(SDL_Renderer **renderer, Rectangle player, int **map) {
             yo = BOARD_SQUARE;
             xo = -yo * aTan;
         }
-        else if (ra == 0 || ra == PI) { //looking straight left of right
+        else if (ra == 0 || fabs(ra - PI) < EPSILON) { //looking straight left of right
             rx = player.x;
             ry = player.y;
             dof = 8;
@@ -183,7 +193,7 @@ void drawRays2D(SDL_Renderer **renderer, Rectangle player, int **map) {
             } else dof = 8;
         }
 
-        float shade;
+        float shade = 0.0f;
 
         //Check if horizontal or vertical is shorter, and draw the shorter one
         if (disV < disH) {
@@ -198,9 +208,6 @@ void drawRays2D(SDL_Renderer **renderer, Rectangle player, int **map) {
             disT = disH;
             shade = 0.5;
         }
-
-        SDL_SetRenderDrawColor(*renderer, 255, 0, 0, 255);
-        SDL_RenderDrawLine(*renderer, player.x, player.y, rx, ry);
 
         //Draw 3D walls
         float ca = fixAng(player.a - ra);
@@ -236,7 +243,7 @@ void drawRays2D(SDL_Renderer **renderer, Rectangle player, int **map) {
             float c = All_Textures[(int)(ty)*32 + (int)(tx)]*255*shade;
             SDL_SetRenderDrawColor(*renderer, c, c, c, 255);
             SDL_Rect wall = {
-                r * LINE_WIDTH + WINDOW_WIDTH/2,
+                r * LINE_WIDTH + BOARD_SQUARE,
                 y + offset,
                 LINE_WIDTH,
                 1

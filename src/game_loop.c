@@ -8,7 +8,7 @@
 
 //----function for initializing sdl window and renderer------
 int initialize_window(SDL_Window **window, SDL_Renderer **renderer) {
-    if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
         fprintf(stderr, "Error initializing SDL.\n");
         return false;
     }
@@ -19,7 +19,7 @@ int initialize_window(SDL_Window **window, SDL_Renderer **renderer) {
         SDL_WINDOWPOS_CENTERED,
         WINDOW_WIDTH,
         WINDOW_HEIGHT,
-        SDL_WINDOW_BORDERLESS
+        SDL_WINDOW_SHOWN
     );
     if (!*window) {
         fprintf(stderr, "Error initializing SDL window.\n");
