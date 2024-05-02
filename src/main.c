@@ -43,6 +43,12 @@ static void mainloop(void) {
         #endif
     }
 
+    if(((int)(player.x/BOARD_SQUARE) == (BOARD_SIZE - 2)) && ((int)(player.y/BOARD_SQUARE) == (BOARD_SIZE - 2))) {
+        map = initialize_maze(BOARD_SIZE);
+        generate_maze(map, BOARD_SIZE);  
+
+        setup(&player);
+    }
     if (!process_input(keys, &player, map, &delta_time, &view)) game_is_running = false;
     update(&last_frame_time, &delta_time);
     render(&renderer, player, map, &view);
